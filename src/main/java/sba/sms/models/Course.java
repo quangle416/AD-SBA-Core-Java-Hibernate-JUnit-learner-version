@@ -25,7 +25,7 @@ import lombok.ToString;
 
 @NamedQueries({
 	@NamedQuery(name = "getAllC", query = "from Course"),
-	@NamedQuery(name = "getByC", query = "from Course where id = ?")
+	@NamedQuery(name = "getByC", query = "from Course where id = :id")
 })
 
 @Entity

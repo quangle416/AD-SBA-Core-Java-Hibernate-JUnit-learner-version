@@ -1,5 +1,6 @@
 package sba.sms.services;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import org.hibernate.HibernateException;
@@ -20,7 +21,9 @@ public class CourseService implements CourseI {
 		
 		try {
 			tx = session.beginTransaction();
+			
 			session.merge(course);
+			
 			tx.commit();
 		
 		}catch (HibernateException ex) {
@@ -40,8 +43,11 @@ public class CourseService implements CourseI {
 		
 		try {
 			tx = session.beginTransaction();
-			Query<Course> q = session.createNamedQuery("getByC", Course.class);
-			c = q.getSingleResult();
+			
+			c = session.createNamedQuery("getByC", Course.class)
+						.setParameter("id", courseId)
+						.getSingleResult();
+			
 			tx.commit();
 		
 		}catch (HibernateException ex) {
@@ -55,24 +61,28 @@ public class CourseService implements CourseI {
 
 	@Override
 	public List<Course> getAllCourses() {
-		
 		Transaction tx = null;
 		Session session = HibernateUtil.getSessionFactory().openSession();
+		List<Course> cList = new LinkedList<>();
+		
 		try {
 			tx = session.beginTransaction();
-			Query<Course> q = session.createNamedQuery("getAllC", Course.class);
-			List<Course> c = q.getResultList();
 			
-			System.out.println(c);
+			cList = session.createNamedQuery("getAllC", Course.class)
+										.getResultList();
 			
+			tx.commit();
 		}catch (HibernateException ex) {
 			ex.printStackTrace();
 			tx.rollback();
 		
 		}finally {
+			
 			session.close();
 		}
-		return null;
+		
+		;
+		return cList;
 	}
 
 }

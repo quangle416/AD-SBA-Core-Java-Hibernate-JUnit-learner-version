@@ -6,6 +6,7 @@ import java.util.List;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.query.NativeQuery;
 import org.hibernate.query.Query;
 
 import sba.sms.dao.StudentI;
@@ -20,13 +21,15 @@ public class StudentService implements StudentI {
 		
 		Transaction tx = null;
 		Session session = HibernateUtil.getSessionFactory().openSession();
+		List<Student> sList = new LinkedList<>();
+		
 		try {
+			
 			tx = session.beginTransaction();
-			Query<Student> q = session.createNamedQuery("getAllS", Student.class);
-			List<Student> s = q.getResultList();
+			
+			sList = session.createNamedQuery("getAllS", Student.class).getResultList();
 			
 			tx.commit();
-			System.out.println(s);
 			
 		}catch (HibernateException ex) {
 			ex.printStackTrace();
@@ -35,7 +38,7 @@ public class StudentService implements StudentI {
 		}finally {
 			session.close();
 		}
-		return s;
+		return sList;
 	}
 
 	@Override
@@ -46,7 +49,9 @@ public class StudentService implements StudentI {
 		
 		try {
 			tx = session.beginTransaction();
+			
 			session.merge(student);
+			
 			tx.commit();
 			
 		} catch(HibernateException ex) {
@@ -68,7 +73,8 @@ public class StudentService implements StudentI {
 		
 		try {
 			tx = session.beginTransaction();
-			Query<Student> q = session.createNamedQuery("getByS", Student.class).setParameter("email", email);
+			Query<Student> q = session.createNamedQuery("getByS", Student.class)
+							.setParameter("email", email);
 			s = q.getSingleResult();
 			tx.commit();
 			
@@ -92,7 +98,9 @@ public class StudentService implements StudentI {
 		try {
 			tx = session.beginTransaction();
 			
-			Query<Student> q = session.createNamedQuery("getByS", Student.class).setParameter("password", password);
+			Query<Student> q = session.createNamedQuery("getByS", Student.class)
+										.setParameter("email", email)
+										.setParameter("password", password);
 			Student s = q.getSingleResult();
 			
 			if (s.getPassword().equals(password)) {
@@ -117,14 +125,17 @@ public class StudentService implements StudentI {
 	public void registerStudentToCourse(String email, int courseId) {
 		Transaction tx = null;
 		Session session = HibernateUtil.getSessionFactory().openSession();
+		
 		try {
 			
 			Student s = session.get(Student.class, email);
 			Course c = session.get(Course.class, courseId);
 			
 			tx = session.beginTransaction();
+			
 			s.addCourse(c);
 			session.merge(s);
+			
 			tx.commit();
 		
 		}catch
@@ -139,19 +150,20 @@ public class StudentService implements StudentI {
 
 	@Override
 	public List<Course> getStudentCourses(String email) {
-		
 		Transaction tx = null;
 		Session session = HibernateUtil.getSessionFactory().openSession();
+		List<Course> sCourses = new LinkedList<>();
 		
 		try {
 			tx = session.beginTransaction();
-			String q = "Select * From student where email = ?";
-			Query<Student> qs = session.createNativeQuery(q, Student.class).setParameter("email", email);
-			List<Student> s = qs.getResultList();
 			
+			String q = "Select name From couse";
+			sCourses = session.createNativeQuery(q, Course.class)
+						.setParameter("email", email)
+						.getResultList();
+
 			tx.commit();
 			
-			System.out.println(s);
 			
 		}catch (HibernateException ex) {
 			ex.printStackTrace();
@@ -161,6 +173,7 @@ public class StudentService implements StudentI {
 			session.close();
 		}
 		
-	} return s;
-
+	 return sCourses;
+		
+}
 }

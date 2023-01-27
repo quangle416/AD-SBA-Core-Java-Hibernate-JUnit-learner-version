@@ -29,7 +29,7 @@ import lombok.experimental.FieldDefaults;
 
 @NamedQueries({
 	@NamedQuery(name = "getAllS", query = "from Student"),
-	@NamedQuery(name = "getByS", query = "from Student where email = ?")
+	@NamedQuery(name = "getByS", query = "from Student where email = :email and password = :password"),
 })
 
 @Entity
@@ -50,7 +50,6 @@ public class Student {
 		@Column(columnDefinition = "varchar(50)", name = "name")
 		String name;
 		@NonNull
-		@Exclude
 		@Column(columnDefinition = "varchar(50)", name = "password")
 		String password;
 		
@@ -65,6 +64,13 @@ public class Student {
 		inverseJoinColumns = @JoinColumn(name = "course_id"))
 		        
 		List<Course> courses = new LinkedList<>();
+		
+		public Student(String email, @NonNull String name, @NonNull String password) {
+			super();
+			this.email = email;
+			this.name = name;
+			this.password = password;
+		}
 		
 		public void addCourse(Course c) {
 			courses.add(c);
@@ -88,5 +94,5 @@ public class Student {
 			return Objects.equals(courses, other.courses) && Objects.equals(email, other.email)
 					&& Objects.equals(name, other.name) && Objects.equals(password, other.password);
 		}
-
+		
 }
