@@ -1,6 +1,6 @@
 package sba.sms.models;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
@@ -25,7 +25,7 @@ import lombok.ToString;
 
 @NamedQueries({
 	@NamedQuery(name = "getAllC", query = "from Course"),
-	@NamedQuery(name = "getByC", query = "from Course where id = :id")
+	@NamedQuery(name = "getByC", query = "from Course where id = ?")
 })
 
 @Entity
@@ -54,7 +54,8 @@ public class Course {
 							CascadeType.REFRESH, 
 							CascadeType.DETACH},
 				fetch = FetchType.EAGER)
-	List<Student> students = new ArrayList<>();
+
+	List<Student> students = new LinkedList<>();
 
 	@Override
 	public int hashCode() {
@@ -75,5 +76,8 @@ public class Course {
 	}
 	
 	
+	}
 	
-}
+	
+	
+

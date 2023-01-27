@@ -5,6 +5,7 @@ import java.util.List;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 
 import sba.sms.dao.CourseI;
 import sba.sms.models.Course;
@@ -39,7 +40,8 @@ public class CourseService implements CourseI {
 		
 		try {
 			tx = session.beginTransaction();
-			c = session.get(Course.class, courseId);
+			Query<Course> q = session.createNamedQuery("getByC", Course.class);
+			c = q.getSingleResult();
 			tx.commit();
 		
 		}catch (HibernateException ex) {
@@ -53,7 +55,23 @@ public class CourseService implements CourseI {
 
 	@Override
 	public List<Course> getAllCourses() {
-		// TODO Auto-generated method stub
+		
+		Transaction tx = null;
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		try {
+			tx = session.beginTransaction();
+			Query<Course> q = session.createNamedQuery("getAllC", Course.class);
+			List<Course> c = q.getResultList();
+			
+			System.out.println(c);
+			
+		}catch (HibernateException ex) {
+			ex.printStackTrace();
+			tx.rollback();
+		
+		}finally {
+			session.close();
+		}
 		return null;
 	}
 

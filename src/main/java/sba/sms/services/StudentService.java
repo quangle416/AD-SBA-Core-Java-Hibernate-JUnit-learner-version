@@ -1,10 +1,12 @@
 package sba.sms.services;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 
 import sba.sms.dao.StudentI;
 import sba.sms.models.Course;
@@ -15,8 +17,25 @@ public class StudentService implements StudentI {
 
 	@Override
 	public List<Student> getAllStudents() {
-		// TODO Auto-generated method stub
-		return null;
+		
+		Transaction tx = null;
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		try {
+			tx = session.beginTransaction();
+			Query<Student> q = session.createNamedQuery("getAllS", Student.class);
+			List<Student> s = q.getResultList();
+			
+			tx.commit();
+			System.out.println(s);
+			
+		}catch (HibernateException ex) {
+			ex.printStackTrace();
+			tx.rollback();
+		
+		}finally {
+			session.close();
+		}
+		return s;
 	}
 
 	@Override
@@ -44,37 +63,104 @@ public class StudentService implements StudentI {
 	public Student getStudentByEmail(String email) {
 	
 		Transaction tx = null;
-		Student student = null;
+		Student s = null;
 		Session session = HibernateUtil.getSessionFactory().openSession();
 		
 		try {
-		Query<Student> student = session.createQuery("from Student student where email =?")
+			tx = session.beginTransaction();
+			Query<Student> q = session.createNamedQuery("getByS", Student.class).setParameter("email", email);
+			s = q.getSingleResult();
+			tx.commit();
 			
-		} catch(HibernateException ex) {
+		
+		}catch (HibernateException ex) {
 			ex.printStackTrace();
 			tx.rollback();
-			
-		} finally {
+		}finally {
 			session.close();
-		return null;
+		}
+		return s;
 	}
 
 	@Override
 	public boolean validateStudent(String email, String password) {
-		// TODO Auto-generated method stub
-		return false;
+		
+		Transaction tx = null;
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		boolean result = false;
+		
+		try {
+			tx = session.beginTransaction();
+			
+			Query<Student> q = session.createNamedQuery("getByS", Student.class).setParameter("password", password);
+			Student s = q.getSingleResult();
+			
+			if (s.getPassword().equals(password)) {
+				result = true;
+				
+			}else result = false;
+		
+			tx.commit();
+			
+		}catch (HibernateException ex) {
+			ex.printStackTrace();
+			tx.rollback();
+			
+		}finally {
+			session.close();
+		}
+		
+		return result;
 	}
 
 	@Override
 	public void registerStudentToCourse(String email, int courseId) {
-		// TODO Auto-generated method stub
+		Transaction tx = null;
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		try {
+			
+			Student s = session.get(Student.class, email);
+			Course c = session.get(Course.class, courseId);
+			
+			tx = session.beginTransaction();
+			s.addCourse(c);
+			session.merge(s);
+			tx.commit();
+		
+		}catch
+		(HibernateException ex) {
+			ex.printStackTrace();
+			tx.rollback();
+		
+		}finally {
+			session.close();}
 		
 	}
 
 	@Override
 	public List<Course> getStudentCourses(String email) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+		
+		Transaction tx = null;
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		
+		try {
+			tx = session.beginTransaction();
+			String q = "Select * From student where email = ?";
+			Query<Student> qs = session.createNativeQuery(q, Student.class).setParameter("email", email);
+			List<Student> s = qs.getResultList();
+			
+			tx.commit();
+			
+			System.out.println(s);
+			
+		}catch (HibernateException ex) {
+			ex.printStackTrace();
+			tx.rollback();
+		
+		}finally {
+			session.close();
+		}
+		
+	} return s;
 
 }
