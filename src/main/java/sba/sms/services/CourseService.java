@@ -38,13 +38,13 @@ public class CourseService implements CourseI {
 	@Override
 	public Course getCourseById(int courseId) {
 		Transaction tx = null;
-		Course c = null;
+		Course cid = null;
 		Session session = HibernateUtil.getSessionFactory().openSession();
 		
 		try {
 			tx = session.beginTransaction();
 			
-			c = session.createNamedQuery("getByC", Course.class)
+			cid = session.createNamedQuery("getByC", Course.class)
 						.setParameter("id", courseId)
 						.getSingleResult();
 			
@@ -56,7 +56,7 @@ public class CourseService implements CourseI {
 		}finally {
 			session.close();
 		}
-		return c;
+		return cid;
 	}
 
 	@Override
@@ -69,7 +69,7 @@ public class CourseService implements CourseI {
 			tx = session.beginTransaction();
 			
 			cList = session.createNamedQuery("getAllC", Course.class)
-										.getResultList();
+							.getResultList();
 			
 			tx.commit();
 		}catch (HibernateException ex) {
@@ -81,7 +81,6 @@ public class CourseService implements CourseI {
 			session.close();
 		}
 		
-		;
 		return cList;
 	}
 

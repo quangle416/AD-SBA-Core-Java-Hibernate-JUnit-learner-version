@@ -29,7 +29,7 @@ import lombok.experimental.FieldDefaults;
 
 @NamedQueries({
 	@NamedQuery(name = "getAllS", query = "from Student"),
-	@NamedQuery(name = "getByS", query = "from Student where email = :email and password = :password"),
+	@NamedQuery(name = "getByS", query = "from Student where email = :email"),
 })
 
 @Entity

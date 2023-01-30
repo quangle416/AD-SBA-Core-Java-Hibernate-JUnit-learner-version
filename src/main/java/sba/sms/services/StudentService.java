@@ -9,6 +9,7 @@ import org.hibernate.Transaction;
 import org.hibernate.query.NativeQuery;
 import org.hibernate.query.Query;
 
+import jakarta.persistence.NoResultException;
 import sba.sms.dao.StudentI;
 import sba.sms.models.Course;
 import sba.sms.models.Student;
@@ -27,7 +28,8 @@ public class StudentService implements StudentI {
 			
 			tx = session.beginTransaction();
 			
-			sList = session.createNamedQuery("getAllS", Student.class).getResultList();
+			sList = session.createNamedQuery("getAllS", Student.class)
+					.getResultList();
 			
 			tx.commit();
 			
@@ -68,24 +70,27 @@ public class StudentService implements StudentI {
 	public Student getStudentByEmail(String email) {
 	
 		Transaction tx = null;
-		Student s = null;
+		Student sBE = null;
 		Session session = HibernateUtil.getSessionFactory().openSession();
 		
 		try {
 			tx = session.beginTransaction();
-			Query<Student> q = session.createNamedQuery("getByS", Student.class)
-							.setParameter("email", email);
-			s = q.getSingleResult();
+			sBE = session.createNamedQuery("getByS", Student.class)
+							.setParameter("email", email)
+							.getSingleResult();
+			
 			tx.commit();
 			
 		
-		}catch (HibernateException ex) {
+		} catch (HibernateException ex) {
 			ex.printStackTrace();
+		
 			tx.rollback();
-		}finally {
+			
+		} finally {
 			session.close();
 		}
-		return s;
+		return sBE;
 	}
 
 	@Override
@@ -93,17 +98,15 @@ public class StudentService implements StudentI {
 		
 		Transaction tx = null;
 		Session session = HibernateUtil.getSessionFactory().openSession();
+		Student sVS = null;
 		boolean result = false;
 		
 		try {
 			tx = session.beginTransaction();
 			
-			Query<Student> q = session.createNamedQuery("getByS", Student.class)
-										.setParameter("email", email)
-										.setParameter("password", password);
-			Student s = q.getSingleResult();
-			
-			if (s.getPassword().equals(password)) {
+			sVS = session.get(Student.class, email);
+					
+			if (sVS.getPassword().equals(password)) {
 				result = true;
 				
 			}else result = false;
@@ -114,7 +117,15 @@ public class StudentService implements StudentI {
 			ex.printStackTrace();
 			tx.rollback();
 			
-		}finally {
+		}catch (NullPointerException npe) {
+			System.out.println("Wrong Credentials");
+			tx.rollback();
+//		}catch (StringIndexOutOfBoundsException sioobe) {
+//			System.out.println("Please Enter Valid Email");
+//			tx.rollback();
+		}
+				
+		finally {
 			session.close();
 		}
 		
@@ -127,16 +138,20 @@ public class StudentService implements StudentI {
 		Session session = HibernateUtil.getSessionFactory().openSession();
 		
 		try {
-			
 			Student s = session.get(Student.class, email);
 			Course c = session.get(Course.class, courseId);
 			
+			
 			tx = session.beginTransaction();
+			List<Course> rSTC = s.getCourses();
 			
-			s.addCourse(c);
-			session.merge(s);
+			if (!rSTC.contains(c)) {
+				s.addCourse(c);
+				session.merge(s);
 			
+			}
 			tx.commit();
+			
 		
 		}catch
 		(HibernateException ex) {
@@ -152,13 +167,13 @@ public class StudentService implements StudentI {
 	public List<Course> getStudentCourses(String email) {
 		Transaction tx = null;
 		Session session = HibernateUtil.getSessionFactory().openSession();
-		List<Course> sCourses = new LinkedList<>();
+		List<Course> stCourses = new LinkedList<>();
 		
 		try {
 			tx = session.beginTransaction();
 			
-			String q = "Select name From couse";
-			sCourses = session.createNativeQuery(q, Course.class)
+			String q = "Select c.id, c.name, c.instructor From course c Join student_courses sc On c.id = sc.course_id Join student s On s.email = sc.student_email Where s.email = :email";
+			stCourses = session.createNativeQuery(q, Course.class)
 						.setParameter("email", email)
 						.getResultList();
 
@@ -173,7 +188,7 @@ public class StudentService implements StudentI {
 			session.close();
 		}
 		
-	 return sCourses;
+	 return stCourses;
 		
 }
 }
